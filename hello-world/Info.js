@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Linking } from 'react-native';
+import { StyleSheet, Text, View, Linking, AsyncStorage  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 
@@ -7,7 +7,8 @@ export default class App extends React.Component {
 
     constructor(props){
         super(props);
-        this.state ={ isLoading: true}
+        this.state ={ isLoading: true};
+
     }
 
     componentDidMount(){
@@ -19,20 +20,19 @@ export default class App extends React.Component {
                     isLoading: false,
                     game: responseJson,
                 }, function(){
-                    console.log(this.state.game);
+
                 });
 
             })
             .catch((error) =>{
                 console.error(error);
             });
-    }
+    };
 
     render() {
 
         const game = this.state.game;
-        console.log('Game :');
-        console.log(game);
+        console.log(this.state.lastGame);
 
         if (this.state.isLoading) return (<Text>Loading...</Text>);
 
