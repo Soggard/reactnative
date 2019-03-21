@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StyleSheet, Text, View, FlatList } from 'react-native';
 
@@ -6,30 +5,48 @@ import { StyleSheet, Text, View, FlatList } from 'react-native';
 
 export default class App extends React.Component {
 
-    state = {
-        clicked: false
-    };
+    constructor(props){
+        super(props);
+        this.state ={ isLoading: true}
+    }
+
+    componentDidMount(){
+
+
+        return fetch('https://androidlessonsapi.herokuapp.com/api/game/list')
+            .then((response) => response.json())
+            .then((responseJson) => {
+
+                this.setState({
+                    isLoading: false,
+                    dataSource: responseJson,
+                }, function(){
+
+                });
+
+            })
+            .catch((error) =>{
+                console.error(error);
+            });
+    }
 
     render() {
-        const text = this.state.clicked ? 'cliqué' : 'Pas cliqué';
-        try {
-            //const result = await this.getGames()
-        } catch(exeption) {
-            //const result = []
-        }
-
+/*
+    */
+        if (this.state.isLoading)  return (<Text>Loading... </Text>);
 
         return (
             <View style={styles.container}>
                 <Text style={styles.text}>Hello Games</Text>
 
                 <FlatList
-                    data={[{key: 'Slinding Puzzle'}, {key: 'TicTacToe'}, {key: 'GameOfLife'}, {key: 'Sudoku'}]}
+                    data={this.state.dataSource}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={({item}) =>
                         <Text style={styles.button}
                           onPress={() =>
-                              this.props.navigation.navigate('Info', {name: item.key})
-                          }>{item.key}</Text>
+                              this.props.navigation.navigate('Info', {id: item.id})
+                          }>{item.name}</Text>
                         }
                 />
 
@@ -37,11 +54,7 @@ export default class App extends React.Component {
         );
     }
 }
-/*
-function getGames() {
-    return fetch('https://androidlessonsapi.herokuapp.com/api/game/list')
-}
-*/
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

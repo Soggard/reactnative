@@ -1,29 +1,65 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Linking } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 export default class App extends React.Component {
-    state = {
-        clicked: false
-    };
+
+    constructor(props){
+        super(props);
+        this.state ={ isLoading: true}
+    }
+
+    componentDidMount(){
+        return fetch('https://androidlessonsapi.herokuapp.com/api/game/details?game_id=' + this.props.navigation.state.params.id)
+            .then((response) => response.json())
+            .then((responseJson) => {
+
+                this.setState({
+                    isLoading: false,
+                    game: responseJson,
+                }, function(){
+                    console.log(this.state.game);
+                });
+
+            })
+            .catch((error) =>{
+                console.error(error);
+            });
+    }
 
     render() {
 
-        const text = this.state.clicked ? 'cliqué' : 'Pas cliqué';
+        const game = this.state.game;
+        console.log('Game :');
+        console.log(game);
+
+        if (this.state.isLoading) return (<Text>Loading...</Text>);
 
         return (
             <View style={styles.container}>
-                <Text style={styles.text}>{text}</Text>
-                <Text style={styles.button1} onPress={() => {
-                    // Mon code réagissant à l'event
-                    this.setState({clicked: false})
-                }}
-                >Pas cliqué</Text>
 
-                <Text style={styles.button2}
-                      onPress={() =>
-                          this.props.navigation.goBack()
-                      }> Cliqué</Text>
+                <View style={styles.whitebox}>
+                    <Text style={styles.title}>{this.state.game.name}</Text>
+                </View>
+
+                <View style={styles.infos}>
+                    <Text style={styles.info}>Players : {this.state.game.players}</Text>
+                    <Text style={styles.info}>Type : {this.state.game.type}</Text>
+                    <Text style={styles.info}>Year : {this.state.game.year}</Text>
+                </View>
+
+                <View style={styles.whitebox}>
+                    <Text style={styles.text}>{this.state.game.description_en}</Text>
+                </View>
+
+                <View style={styles.whitebox}>
+                    <Text style={styles.title}
+                          onPress={() => Linking.openURL(this.state.game.url)}>
+                        More details...  <Icon name="question-circle" size={20} />
+                    </Text>
+                </View>
+
             </View>
         );
     }
@@ -32,14 +68,38 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#d1ddff',
+        color: '#505463',
         alignItems: 'center',
         justifyContent: 'center',
+        alignSelf: 'stretch',
+        textAlign: 'center',
     },
-    button1: {
-        backgroundColor: 'red'
+    text: {
+        textAlign: 'justify',
+        fontSize: 14,
+        fontWeight: 'bold'
     },
-    button2: {
-        backgroundColor: 'green'
+    title: {
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    whitebox: {
+        backgroundColor: 'white',
+        borderRadius: 15,
+        alignSelf: 'stretch',
+        textAlign: 'center',
+        margin: 20,
+        padding: 20,
+    },
+    infos: {
+        margin: 20,
+        alignSelf: 'stretch',
+    },
+    info: {
+        alignSelf: 'stretch',
+        fontSize: 14,
+        fontWeight: 'bold'
     }
 });
