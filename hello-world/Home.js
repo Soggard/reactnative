@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, View, FlatList, AsyncStorage, ActivityIndicator, Animated, ImageBackground, Easing } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 export default class App extends React.Component {
@@ -8,28 +9,26 @@ export default class App extends React.Component {
         super(props);
         this.state ={
             isLoading: true,
-            lastGame: null
+            lastGame: null,
+            lastGameId: null,
+            fadeAnim: new Animated.Value(0),
+            spinValue: new Animated.Value(0)
         }
     }
 
     _storeData = async (item, value) => {
-        console.log('Storing '+ item + ' '+ value);
         try {
             await AsyncStorage.setItem(item, value);
-            console.log('Stored '+ item + ' '+ value);
         } catch (error) {
             console.error(error);
         }
     };
 
     _retrieveData = async (item) => {
-        console.log('Retrieving '+ item);
         try {
             const value = await AsyncStorage.getItem(item);
             if (value !== null) {
-                console.log('Retrieved '+ item + ' : ' + value);
-                this.state.lastGame = value;
-                console.log(this.state.lastGame);
+                this.setState({ [item]: value });
             }
         } catch (error) {
             console.error(error);
@@ -38,13 +37,50 @@ export default class App extends React.Component {
 
     navigateToGame = function(id, name) {
         this._storeData('lastGame', name);
+        this._storeData('lastGameId', id);
         this.props.navigation.navigate('Info', {id: id});
     };
 
+    loadingAnimation() {
+        Animated.loop(Animated.sequence(
+            [
+                Animated.timing(
+                    this.state.spinValue,
+                    {
+                        toValue: 1,
+                        duration: 2000,
+                        easing: Easing.bounce,
+                        useNativeDriver: true
+                    }
+                ),
+                Animated.timing(
+                    this.state.spinValue,
+                    {
+                        toValue: 0,
+                        duration: 2000,
+                        easing: Easing.cubic,
+                        useNativeDriver: true
+                    }
+                ),
+            ]
+        )).start();
+    }
+
     componentDidMount(){
-        console.log("mounting");
+        Animated.timing(
+            this.state.fadeAnim,
+            {
+                toValue: 1,
+                duration: 2000,
+            },
+           this.state.spinValue,
+        ).start();
+
+        this.loadingAnimation();
 
         this._retrieveData('lastGame');
+        this._retrieveData('lastGameId');
+
         return fetch('https://androidlessonsapi.herokuapp.com/api/game/list')
             .then((response) => response.json())
             .then((responseJson) => {
@@ -63,16 +99,39 @@ export default class App extends React.Component {
     }
 
     render() {
-        console.log("rendering");
-        this._retrieveData('lastGame');
-        const lastGame = this.state.lastGame;
-        if (this.state.isLoading)  return (<Text>Loading... </Text>);
+        const spin = this.state.spinValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0deg', '360deg']
+        });
 
+        this._retrieveData('lastGame');
+        this._retrieveData('lastGameId');
+
+        const lastGame = this.state.lastGame;
+        const lastGameId = this.state.lastGameId;
+        const gamepad = require ('./img/gamepad.png');
+
+        // Loading page
+        if (this.state.isLoading)  return (
+            <View style={[styles.container]}>
+                <ActivityIndicator size="large" color="#00ff00" />
+                <Text style={{fontWeight:'bold'}}>Loading... </Text>
+                <Animated.Image
+                    style={{transform: [{rotate: spin}] }}
+                    source={gamepad} />
+            </View>
+        );
+
+        // Home page
         return (
-            <View style={styles.container}>
-                <Text style={styles.text}>Hello Games</Text>
+            <Animated.View style={[styles.container, {opacity: this.state.fadeAnim}]}>
+                <Text style={styles.title}>
+                    <Icon name="gamepad" size={30} />
+                    Hello Games
+                </Text>
 
                 <FlatList
+                    style={{alignSelf: 'stretch'}}
                     data={this.state.dataSource}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({item}) =>
@@ -83,8 +142,11 @@ export default class App extends React.Component {
                         }
                 />
 
-                <Text style={styles.lastGame}>{lastGame}</Text>
-            </View>
+                <Text style={styles.lastGame}
+                      onPress={() =>
+                    {this.navigateToGame(lastGameId, lastGame)} }
+                    >Last game seen : {lastGame}</Text>
+            </Animated.View>
         );
     }
 }
@@ -95,13 +157,25 @@ const styles = StyleSheet.create({
         backgroundColor: '#d1ddff',
         color: '#505463',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'center'
     },
-    text: {
-        flex: 1,
+    title: {
+        alignSelf: 'stretch',
+        textAlign: 'center',
+        padding: 20,
+        fontSize:30
     },
     button: {
-        flex: 1,
-        backgroundColor: 'lightgrey'
+        backgroundColor: 'white',
+        borderRadius: 15,
+        alignSelf: 'stretch',
+        textAlign: 'center',
+        margin: 20,
+        marginTop: 5,
+        marginBottom: 5,
+        padding: 20,
+    },
+    lastGame: {
+        height: 30,
     }
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Linking, AsyncStorage  } from 'react-native';
+import { StyleSheet, Text, View, Linking, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 
@@ -19,9 +19,7 @@ export default class App extends React.Component {
                 this.setState({
                     isLoading: false,
                     game: responseJson,
-                }, function(){
-
-                });
+                }, function(){});
 
             })
             .catch((error) =>{
@@ -31,13 +29,17 @@ export default class App extends React.Component {
 
     render() {
 
-        const game = this.state.game;
-        console.log(this.state.lastGame);
-
-        if (this.state.isLoading) return (<Text>Loading...</Text>);
+        if (this.state.isLoading)  return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="#00ff00" />
+                <Text>Loading... </Text>
+            </View>
+        );
 
         return (
             <View style={styles.container}>
+
+                <Text><Icon name="trophy" size={20} color={'blue'} /></Text>
 
                 <View style={styles.whitebox}>
                     <Text style={styles.title}>{this.state.game.name}</Text>
@@ -55,9 +57,9 @@ export default class App extends React.Component {
 
                 <View style={styles.whitebox}>
                     <Text style={styles.title}
-                          onPress={() => Linking.openURL(this.state.game.url)}>
-                        More details...  <Icon name="question-circle" size={20} />
-                    </Text>
+                          onPress={() => {
+                              {this.props.navigation.navigate('MoreDetails', {url: this.state.game.url})}}}
+                    >More details...  <Icon name="question-circle" size={20} /></Text>
                 </View>
 
             </View>
