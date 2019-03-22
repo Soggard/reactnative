@@ -10,6 +10,7 @@ export default class App extends React.Component {
         this.state ={
             isLoading: true,
             lastGame: null,
+            lastGameId: null,
             fadeAnim: new Animated.Value(0),
             spinValue: new Animated.Value(0)
         }
@@ -35,9 +36,8 @@ export default class App extends React.Component {
     };
 
     navigateToGame = function(id, name) {
-        console.log('Navigating to ' + name);
-        console.log('Navigating to ' + id);
         this._storeData('lastGame', name);
+        this._storeData('lastGameId', id);
         this.props.navigation.navigate('Info', {id: id});
     };
 
@@ -79,6 +79,7 @@ export default class App extends React.Component {
         this.loadingAnimation();
 
         this._retrieveData('lastGame');
+        this._retrieveData('lastGameId');
 
         return fetch('https://androidlessonsapi.herokuapp.com/api/game/list')
             .then((response) => response.json())
@@ -104,8 +105,10 @@ export default class App extends React.Component {
         });
 
         this._retrieveData('lastGame');
+        //this._retrieveData('lastGameId'); // Cette ligne permet de mettre à jour le lien vers le dernier jeu joué, mais ralentit considérablement l'application.
 
         const lastGame = this.state.lastGame;
+        const lastGameId = this.state.lastGameId;
         const gamepad = require ('./img/gamepad.png');
 
         // Loading page
@@ -142,9 +145,9 @@ export default class App extends React.Component {
                 <Text style={styles.lastGame}
                       onPress={() =>
                     {
-                        this.navigateToGame(5, lastGame)
+                        this.navigateToGame(lastGameId, lastGame)
                     } }
-                    >Last game seen : {lastGame}</Text>
+                    >Last game seen : {lastGame} {lastGameId}</Text>
             </Animated.View>
         );
     }
