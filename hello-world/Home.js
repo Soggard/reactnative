@@ -36,6 +36,8 @@ export default class App extends React.Component {
     };
 
     navigateToGame = function(id, name) {
+        console.log('Navigating to ' + name);
+        console.log('Navigating to ' + id);
         this._storeData('lastGame', name);
         this._storeData('lastGameId', id);
         this.props.navigation.navigate('Info', {id: id});
@@ -137,14 +139,17 @@ export default class App extends React.Component {
                     renderItem={({item}) =>
                         <Text style={styles.button}
                           onPress={() =>
-                            {this.navigateToGame(item.id, item.name)}
+                            {this.navigateToGame(item.id.toString(), item.name)}
                           }>{item.name}</Text>
                         }
                 />
 
                 <Text style={styles.lastGame}
                       onPress={() =>
-                    {this.navigateToGame(lastGameId, lastGame)} }
+                    {
+                        console.log('aaa');
+                        this.navigateToGame(lastGameId.toString(), lastGame)
+                    } }
                     >Last game seen : {lastGame}</Text>
             </Animated.View>
         );
@@ -176,6 +181,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     lastGame: {
-        height: 30,
+        fontWeight: 'bold',
+        fontSize: 18,
     }
 });
