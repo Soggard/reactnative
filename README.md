@@ -19,6 +19,8 @@ Options :
 - Ecran de chargement animé, effet de fade à l'ouverture/fermeture de certains écrans
 
 #### Démarrer expo
+>cd hello-world
+
 >npm install
 
 >npm start
