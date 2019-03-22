@@ -10,7 +10,6 @@ export default class App extends React.Component {
         this.state ={
             isLoading: true,
             lastGame: null,
-            lastGameId: null,
             fadeAnim: new Animated.Value(0),
             spinValue: new Animated.Value(0)
         }
@@ -39,7 +38,6 @@ export default class App extends React.Component {
         console.log('Navigating to ' + name);
         console.log('Navigating to ' + id);
         this._storeData('lastGame', name);
-        this._storeData('lastGameId', id);
         this.props.navigation.navigate('Info', {id: id});
     };
 
@@ -81,7 +79,6 @@ export default class App extends React.Component {
         this.loadingAnimation();
 
         this._retrieveData('lastGame');
-        this._retrieveData('lastGameId');
 
         return fetch('https://androidlessonsapi.herokuapp.com/api/game/list')
             .then((response) => response.json())
@@ -107,10 +104,8 @@ export default class App extends React.Component {
         });
 
         this._retrieveData('lastGame');
-        this._retrieveData('lastGameId');
 
         const lastGame = this.state.lastGame;
-        const lastGameId = this.state.lastGameId;
         const gamepad = require ('./img/gamepad.png');
 
         // Loading page
@@ -147,8 +142,7 @@ export default class App extends React.Component {
                 <Text style={styles.lastGame}
                       onPress={() =>
                     {
-                        console.log('aaa');
-                        this.navigateToGame(lastGameId.toString(), lastGame)
+                        this.navigateToGame(5, lastGame)
                     } }
                     >Last game seen : {lastGame}</Text>
             </Animated.View>
